@@ -11,7 +11,7 @@ export class API {
     this.openai = new OpenAI({
       baseURL: "https://verifizierung-studie.pages.dev/openai/v1/",
       dangerouslyAllowBrowser: true,
-      apiKey: "f28b26d0265b5b670e884afd523a246a",
+      apiKey: "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",
     });
 
     this.prompted = prompted
