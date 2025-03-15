@@ -13,7 +13,7 @@ async function proxy(request, env) {
 
     const requestUrl = new URL(request.url)
 
-    const url = "https://gateway.ai.cloudflare.com/v1/da585d39f551956fdf78625fe109246e/foir-ui/openai/" + requestUrl.pathname.substring("/openai/v1/".length);
+    const url = "https://gateway.ai.cloudflare.com/v1/257b8498a04c58790e756df308765bd3/verifizierung-studie/openai/" + requestUrl.pathname.substring("/openai/v1/".length);
     headers.set(authKey, `Bearer ${env.OPENAPI_API_KEY}`);
 
     return await fetch(url, {
