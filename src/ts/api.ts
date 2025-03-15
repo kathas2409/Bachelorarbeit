@@ -9,7 +9,7 @@ export class API {
   constructor(prompted: boolean) {
 
     this.openai = new OpenAI({
-      baseURL: "/openai/v1/",
+      baseURL: "https://verifizierung-studie.pages.dev/openai/v1/",
       dangerouslyAllowBrowser: true,
       apiKey: "f28b26d0265b5b670e884afd523a246a",
     });
