@@ -9,7 +9,7 @@ export class API {
   constructor(prompted: boolean) {
 
     this.openai = new OpenAI({
-      baseURL: location.protocol + "//localhost:11435/v1/",
+      baseURL: "/openai/v1/",
       dangerouslyAllowBrowser: true,
       apiKey: "f28b26d0265b5b670e884afd523a246a",
     });
@@ -57,7 +57,7 @@ export class API {
 
         const stream = await this.openai.chat.completions.create({
           messages: apiMessages,
-          model: 'gpt-3.5-turbo-0125',
+          model: 'gpt-4o-2024-11-20',
           stream: true
         });
 
