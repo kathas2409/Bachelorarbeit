@@ -104,10 +104,15 @@ export class API {
           stream: true,
         });
 
+        let fullResponse = "";
+
         for await (const chunk of stream) {
           const newText = chunk.choices[0]?.delta?.content || "";
+          fullResponse += newText;
           setContent((content) => content + newText);
         }
+
+        await saveMessageToServer(fullResponse);
 
         setDone(true);
       } catch (e) {
