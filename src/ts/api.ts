@@ -29,6 +29,8 @@ async function saveMessageToServer(message: string) {
   const ipHash = await getIpHash();
   const timestamp = new Date().toISOString();
 
+  console.log("Speichern ausgelöst für:", message); // Debug-Ausgabe
+
   await fetch("/api/saveMessage", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
