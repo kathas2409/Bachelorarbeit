@@ -2,7 +2,9 @@ import { JSDOM } from "jsdom";
 import { Readability } from "@mozilla/readability";
 import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 async function extractTextFromUrl(url: string): Promise<string> {
   try {
@@ -13,6 +15,7 @@ async function extractTextFromUrl(url: string): Promise<string> {
     const article = reader.parse();
     return article?.textContent || "Kein Inhalt gefunden.";
   } catch (err) {
+    console.error("Fehler beim Extrahieren:", err);
     return "Fehler beim Abrufen der Seite.";
   }
 }
@@ -32,14 +35,21 @@ export const onRequestPost: PagesFunction = async (context) => {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o",
     messages: [
-      { role: "system", content: "Du bewertest Webseiteninhalte auf ihre Glaubwürdigkeit, Verständlichkeit und Seriosität." },
-      { role: "user", content: `Nutzerfrage: ${message}\n\nInhalt der Webseite(n):\n${webText}` },
-    ],
+      {
+        role: "system",
+        content: "Du analysierst Webseiteninhalte auf ihre Glaubwürdigkeit, Verständlichkeit und Seriosität."
+      },
+      {
+        role: "user",
+        content: `Frage: ${message}\n\nInhalte der verlinkten Webseiten:\n${webText}`
+      }
+    ]
   });
 
-  return new Response(JSON.stringify({ reply: completion.choices[0].message.content }), {
+  const reply = completion.choices[0]?.message?.content || "Keine Antwort erhalten.";
+
+  return new Response(JSON.stringify({ reply }), {
     status: 200,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json" }
   });
 };
-
