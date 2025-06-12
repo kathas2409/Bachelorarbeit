@@ -24,7 +24,9 @@
     "openai": "^4.28.4",
     "solid-js": "^1.8.15",
     "solid-markdown": "^2.0.0",
-    "solid-start": "^0.3.10"
+    "solid-start": "^0.3.10";
+    "jsdom": "^24.0.0",
+    "@mozilla/readability": "^0.4.4"
   },
   "engines": {
     "node": ">=18"
