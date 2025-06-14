@@ -1,8 +1,8 @@
 name = "verifizierung-studie"
 compatibility_date = "2024-06-01"
+pages_build_output_dir = "./dist"
 
 [env.production]
 d1_databases = [
   { binding = "DB", database_name = "chatdb", database_id = "b6ad4db2-ce55-4022-9715-a40b368fdbb9" }
-
 ]
