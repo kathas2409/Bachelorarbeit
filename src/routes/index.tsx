@@ -130,19 +130,63 @@ export default function Home() {
     });
   }
 
-  const onsubmit = () => {
-    const messageText = message()
-    if (messageText.length === 0) {
-      return
-    }
+  const onsubmit = async () => {
+  const messageText = message()
+  if (messageText.length === 0) return
 
-    setMessage("")
-    setMessages([...messages(), {
+  const timestamp = Date.now()
+
+  // 1. Nutzer-Nachricht direkt anzeigen
+  setMessage("")
+  setMessages([...messages(), {
+    time: timestamp,
+    role: "user",
+    content: messageText
+  }])
+
+  // 2. Nachricht speichern
+  fetch("/api/saveMessage", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ message: messageText })
+  }).catch((err) => console.warn("Fehler beim Speichern:", err))
+
+  // 3. GPT-Antwort von /api/chat holen (mit Webseiteninhalt)
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: messageText })
+    })
+
+    const data = await res.json()
+    const replyText = data.reply || "Ich konnte leider keine Antwort generieren."
+
+    // 4. GPT-Antwort anzeigen
+    setMessages(m => [...m, {
       time: Date.now(),
-      role: "user",
-      content: messageText
-    }, api().sendMessage([...messages()], messageText)])
+      role: "assistant",
+      content: () => replyText,
+      done: () => true,
+      error: () => null,
+      retry: () => { }
+    }])
+  } catch (err) {
+    console.error("Fehler bei GPT-Antwort:", err)
+    setMessages(m => [...m, {
+      time: Date.now(),
+      role: "assistant",
+      content: () => "",
+      done: () => true,
+      error: () => "Fehler beim Abrufen der Antwort",
+      retry: () => onsubmit()
+    }])
   }
+}
 
   return (
     <div class="flex flex-col w-screen h-screen h-svh bg-gray-800">
