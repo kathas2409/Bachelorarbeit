@@ -1,11 +1,21 @@
 {
   "name": "foir-ui",
+  "type": "module",
   "scripts": {
     "dev": "solid-start dev",
     "build": "solid-start build",
     "start": "solid-start start"
   },
-  "type": "module",
+  "dependencies": {
+    "@solidjs/meta": "^0.29.3",
+    "@solidjs/router": "^0.9.1",
+    "openai": "^4.28.4",
+    "solid-js": "^1.8.15",
+    "solid-markdown": "^2.0.0",
+    "solid-start": "^0.3.10",
+    "jsdom": "^24.0.0",
+    "@mozilla/readability": "^0.4.4"
+  },
   "devDependencies": {
     "@types/node": "^18.19.17",
     "@unocss/preset-wind": "^0.58.5",
@@ -17,16 +27,6 @@
     "unocss": "^0.58.5",
     "vite": "^4.5.2",
     "wrangler": "^3.30.0"
-  },
-  "dependencies": {
-    "@solidjs/meta": "^0.29.3",
-    "@solidjs/router": "^0.9.1",
-    "openai": "^4.28.4",
-    "solid-js": "^1.8.15",
-    "solid-markdown": "^2.0.0",
-    "solid-start": "^0.3.10";
-    "jsdom": "^24.0.0",
-    "@mozilla/readability": "^0.4.4"
   },
   "engines": {
     "node": ">=18"
