@@ -1,0 +1,41 @@
+{
+  ".solid/index.css": {
+    "file": "assets/index-486e8a97.css",
+    "src": ".solid/index.css"
+  },
+  ".solid/index.html": {
+    "css": [
+      "assets/index-486e8a97.css"
+    ],
+    "dynamicImports": [
+      "src/routes/[...404].tsx",
+      "src/routes/index.tsx"
+    ],
+    "file": "assets/index-ed59be3b.js",
+    "isEntry": true,
+    "src": ".solid/index.html"
+  },
+  "src/routes/[...404].tsx": {
+    "file": "assets/_...404_-862fc12b.js",
+    "imports": [
+      ".solid/index.html"
+    ],
+    "isDynamicEntry": true,
+    "src": "src/routes/[...404].tsx"
+  },
+  "src/routes/index.css": {
+    "file": "assets/index-4c23c6df.css",
+    "src": "src/routes/index.css"
+  },
+  "src/routes/index.tsx": {
+    "css": [
+      "assets/index-4c23c6df.css"
+    ],
+    "file": "assets/index-d654e335.js",
+    "imports": [
+      ".solid/index.html"
+    ],
+    "isDynamicEntry": true,
+    "src": "src/routes/index.tsx"
+  }
+}

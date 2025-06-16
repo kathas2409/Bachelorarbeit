@@ -2,10 +2,11 @@
   "name": "foir-ui",
   "type": "module",
   "scripts": {
-    "dev": "solid-start dev",
-    "build": "solid-start build",
-    "start": "solid-start start"
-  },
+  "dev": "solid-start dev",
+  "build": "solid-start build",
+  "start": "solid-start start"
+}
+,
   "dependencies": {
     "@solidjs/meta": "^0.29.3",
     "@solidjs/router": "^0.8.2",
