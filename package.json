@@ -1,33 +1,21 @@
 {
-  "name": "foir-ui",
-  "type": "module",
+  "name": "verifizierung-studie",
   "scripts": {
-  "dev": "solid-start dev",
-  "build": "solid-start build",
-  "start": "solid-start start"
-}
-,
-  "dependencies": {
-    "@solidjs/meta": "^0.29.3",
-    "@solidjs/router": "^0.8.2",
-    "openai": "^4.28.4",
-    "solid-js": "^1.8.15",
-    "solid-markdown": "^2.0.0",
-    "solid-start": "^0.3.11",
-    "jsdom": "^24.0.0",
-    "@mozilla/readability": "^0.4.4"
+    "dev": "solid-start dev",
+    "build": "vite build",
+    "start": "solid-start start"
   },
+  "type": "module",
   "devDependencies": {
-    "@types/node": "^18.19.17",
-    "@unocss/preset-wind": "^0.58.5",
-    "@unocss/reset": "^0.58.5",
-    "@unocss/transformer-variant-group": "^0.58.5",
-    "solid-devtools": "^0.29.3",
+    "@solidjs/meta": "^0.28.2",
+    "@solidjs/router": "^0.8.2",
+    "solid-start": "^0.3.11",
     "solid-start-node": "^0.3.11",
-    "typescript": "^5.3.3",
-    "unocss": "^0.58.5",
-    "vite": "^4.5.2",
-    "wrangler": "^3.30.0"
+    "typescript": "^5.1.3",
+    "vite": "^4.3.9"
+  },
+  "dependencies": {
+    "solid-js": "^1.7.8"
   },
   "engines": {
     "node": ">=18"
