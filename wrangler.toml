@@ -2,9 +2,5 @@ name = "verifizierung-studie"
 compatibility_date = "2024-01-01"
 pages_build_output_dir = "dist/public"
 
-# Node.js Kompatibilität
+# Node.js Kompatibilität für Pages
 compatibility_flags = ["nodejs_compat"]
-node_compat = true
-
-[site]
-bucket = "./dist/public"
