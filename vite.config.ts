@@ -3,9 +3,9 @@ import solid from "solid-start/vite";
 
 export default defineConfig({
   plugins: [
-    solid({ ssr: false })
-  ],
-  build: {
-    target: 'esnext'
-  }
+    solid({ 
+      ssr: false,
+      adapter: "solid-start-cloudflare-pages"
+    })
+  ]
 });
