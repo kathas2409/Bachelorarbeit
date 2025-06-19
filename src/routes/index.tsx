@@ -131,124 +131,103 @@ export default function Home() {
   }
 
   const onsubmit = async () => {
-  const messageText = message()
-  if (messageText.length === 0) return
+    const messageText = message()
+    if (messageText.length === 0) return
 
-  const timestamp = Date.now()
+    const timestamp = Date.now()
 
-  // 1. Nutzer-Nachricht direkt anzeigen
-  setMessage("")
-  setMessages([...messages(), {
-    time: timestamp,
-    role: "user",
-    content: messageText
-  }])
+    // 1. Nutzer-Nachricht direkt anzeigen
+    setMessage("")
+    setMessages([...messages(), {
+      time: timestamp,
+      role: "user",
+      content: messageText
+    }])
 
-  // 2. Nachricht speichern
-  fetch("/api/saveMessage", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ message: messageText })
-  }).catch((err) => console.warn("Fehler beim Speichern:", err))
+    // 2. Nachricht speichern
+    fetch("/api/saveMessage", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: messageText })
+    }).catch((err) => console.warn("Fehler beim Speichern:", err))
 
-  // 3. GPT-Antwort von /api/chat holen (mit Webseiteninhalt)
-  t// 3. GPT-Antwort von /api/chat holen
-try {
-  // Sammle alle bisherigen Nachrichten für den Kontext
-  const allMessages = [];
-  
-  // Füge System-Prompt hinzu wenn "prompted" aktiviert ist
-  if (prompted()) {
-    allMessages.push({
-      role: "system",
-      content: "Du bist ein hilfreicher Assistent. Antworte auf Deutsch."
-    });
-  }
-  
-  // Füge alle bisherigen Nachrichten hinzu
-  for (const msg of messages()) {
-    if (msg.role === "user") {
+    // 3. GPT-Antwort von /api/chat holen
+    try {
+      // Sammle alle bisherigen Nachrichten für den Kontext
+      const allMessages = [];
+      
+      // Füge System-Prompt hinzu wenn "prompted" aktiviert ist
+      if (prompted()) {
+        allMessages.push({
+          role: "system",
+          content: "Du bist ein hilfreicher Assistent. Antworte auf Deutsch."
+        });
+      }
+      
+      // Füge alle bisherigen Nachrichten hinzu
+      for (const msg of messages()) {
+        if (msg.role === "user") {
+          allMessages.push({
+            role: "user",
+            content: msg.content
+          });
+        } else {
+          allMessages.push({
+            role: "assistant", 
+            content: msg.content()
+          });
+        }
+      }
+      
+      // Füge die neue Nachricht hinzu
       allMessages.push({
         role: "user",
-        content: msg.content
+        content: messageText
       });
-    } else {
-      allMessages.push({
-        role: "assistant", 
-        content: msg.content()
+
+      console.log("Sende an API:", { messages: allMessages });
+
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ 
+          messages: allMessages,
+          prompted: prompted() 
+        })
       });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      const replyText = data.reply || "Ich konnte leider keine Antwort generieren.";
+
+      // 4. GPT-Antwort anzeigen
+      setMessages(m => [...m, {
+        time: Date.now(),
+        role: "assistant",
+        content: () => replyText,
+        done: () => true,
+        error: () => null,
+        retry: () => { }
+      }]);
+    } catch (err) {
+      console.error("Fehler bei GPT-Antwort:", err);
+      setMessages(m => [...m, {
+        time: Date.now(),
+        role: "assistant",
+        content: () => "",
+        done: () => true,
+        error: () => "Fehler beim Abrufen der Antwort",
+        retry: () => onsubmit()
+      }]);
     }
   }
-  
-  // Füge die neue Nachricht hinzu
-  allMessages.push({
-    role: "user",
-    content: messageText
-  });
-
-  console.log("Sende an API:", { messages: allMessages });
-
-  const res = await fetch("/api/chat", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ 
-      messages: allMessages,
-      prompted: prompted() 
-    })
-  });
-
-  if (!res.ok) {
-    throw new Error(`HTTP error! status: ${res.status}`);
-  }
-
-  const data = await res.json();
-  const replyText = data.reply || "Ich konnte leider keine Antwort generieren.";
-
-  // 4. GPT-Antwort anzeigen
-  setMessages(m => [...m, {
-    time: Date.now(),
-    role: "assistant",
-    content: () => replyText,
-    done: () => true,
-    error: () => null,
-    retry: () => { }
-  }]);
-} catch (err) {
-  console.error("Fehler bei GPT-Antwort:", err);
-  setMessages(m => [...m, {
-    time: Date.now(),
-    role: "assistant",
-    content: () => "",
-    done: () => true,
-    error: () => "Fehler beim Abrufen der Antwort",
-    retry: () => onsubmit()
-  }]);
-}
-    // 4. GPT-Antwort anzeigen
-    setMessages(m => [...m, {
-      time: Date.now(),
-      role: "assistant",
-      content: () => replyText,
-      done: () => true,
-      error: () => null,
-      retry: () => { }
-    }])
-  } catch (err) {
-    console.error("Fehler bei GPT-Antwort:", err)
-    setMessages(m => [...m, {
-      time: Date.now(),
-      role: "assistant",
-      content: () => "",
-      done: () => true,
-      error: () => "Fehler beim Abrufen der Antwort",
-      retry: () => onsubmit()
-    }])
-  }
-}
 
   return (
     <div class="flex flex-col w-screen h-screen h-svh bg-gray-800">
@@ -326,50 +305,3 @@ try {
         </div>
         <div class="flex-1">
             <textarea
-              id="notes-textarea"
-              class="w-full h-full resize-none p-4 outline-none border-0 bg-gray-800/30"
-            />
-        </div>
-      </div>
-
-      <div class="relative flex-1 overflow-hidden">
-        <ScrollOverflowFadeout top />
-        { chatMessageScroller }
-        <ScrollOverflowFadeout />
-      </div>
-
-      <div class="overflow-x-hidden w-full p-4 flex flex-row justify-center items-end gap-2">
-        <div class="max-w-2xl w-full flex flex-col gap-4 items-center">
-          <GrowingTextarea
-            id="chat-input"
-            accessor={message}
-            setter={setMessage}
-            onsubmit={onsubmit}
-            disabled={latestMessagePending()}
-            color="#ff00ff"
-            class="bg-gray-850 rounded-lg outline-none border-0 ring focus-visible:ring-blue-400 ring-gray-900 disabled:(text-gray-700 placeholder:text-gray-700)"
-            placeholder="Schreibe dem Assistenten…"
-          />
-        </div>
-        <button
-          class="my-1 w-12 h-12 flex justify-center items-center border-1 align-start
-          bg-gray-850 text-gray-400 border-gray-900 disabled:text-gray-600 not-disabled:(hover:(bg-gray-850/60 text-gray-200) active:(border-blue-400 bg-gray-850/20))
-          rounded-lg"
-          disabled={message().length === 0 || latestMessagePending()}
-          onclick={onsubmit}
-        >
-          <SendIcon />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function ScrollOverflowFadeout(props: { top?: boolean }) {
-  return (
-    <div class={`absolute inset-x-0 ${props.top ? "top-0" : "bottom-0"} h-8 flex flex-row justify-center`}>
-      {/* mr-10px makes sure that the scrollbar isn't affected by the fadeout on small screens */}
-      <div class={`max-w-3xl w-full mr-10px ${props.top ? "bg-gradient-to-b" : "bg-gradient-to-t"} from-gray-800 to-transparent`} />
-    </div>
-  )
-}
