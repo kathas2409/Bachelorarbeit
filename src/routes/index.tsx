@@ -60,12 +60,10 @@ export default function Home() {
     >
       <div class="my-4 w-full flex flex-col gap-4 items-center">
         <For each={messages()}>{(message) =>
-          <div class={`max-w-3xl px-8 w-full break-words py-3 rounded-xl`}>
-            <div class="text-lg font-bold mb-1">{message.role === "user" ? "Nutzer" : "Assistent"}</div>
+          <div class={`max-w-3xl px-8 w-full break-words py-3 rounded-xl text-white`}>            <div class="text-lg font-bold mb-1">{message.role === "user" ? "Nutzer" : "Assistent"}</div>
             {
               message.role === "user" ?
-                <p class="whitespace-pre-wrap">{message.content}</p>
-                :
+              <p class="whitespace-pre-wrap text-white">{message.content}</p>                :
                 <>
                   <SolidMarkdown class={"md" + (message.error() ? " opacity-50" : "")}>
                     {message.content() + (message.done() ? (message.error() !== null ? " ❌" : "") : " ⬤")}
@@ -76,7 +74,7 @@ export default function Home() {
                         Error: {message.error()}
                       </div>
                       <button class="p-1 my-1 w-8 h-8 flex justify-center items-center border-1 align-start animate-pulse hover:animate-none
-                          bg-gray-850 text-gray-400 border-gray-900 disabled:text-gray-600 not-disabled:(border-green-400 hover:(bg-gray-850/60 text-gray-200) active:(border-blue-400 bg-gray-850/20))
+                          bg-gray-900 text-gray-400 border-gray-900 disabled:text-gray-600 not-disabled:(border-green-400 hover:(bg-gray-900/60 text-gray-200) active:(border-blue-400 bg-gray-900/20))
                             rounded-lg"
                           onclick={() => message.retry()}
                       >
@@ -233,11 +231,11 @@ export default function Home() {
     <div class="flex flex-col w-screen h-screen h-svh bg-gray-800">
       <div class="h-4" />
 
-      <div class="fixed flex flex-col gap-4 left-2 top-2 z-1 group">
+      <div class="fixed flex flex-col gap-4 left-2 top-2 z-10 group">
         <div class="absolute left-8 inset-y-0 flex flex-row items-center text-sm text-gray-500 opacity-0 group-hover:(opacity-100 left-12) transition-all duration-200 pointer-events-none">
           [ESC]
         </div>
-        <button class="relative p-1 bg-gray-750 hover:bg-gray-700 rounded-xl outline-none" onclick={() => setShowNotes(true)}>
+        <button class="relative p-1 bg-gray-700 hover:bg-gray-700 rounded-xl outline-none" onclick={() => setShowNotes(true)}>
           <NotesIcon />
         </button>
         <Show when={debug()}>
@@ -246,7 +244,7 @@ export default function Home() {
       </div>
 
       <Show when={showConfig()}>
-        <div class="fixed inset-2 z-10 p-2 flex flex-col items-center gap-4 bg-gray-750 rounded-xl">
+        <div class="fixed inset-2 z-10 p-2 flex flex-col items-center gap-4 bg-gray-700 rounded-xl">
           <div class="flex flex-row gap-2">
             <div>MODEL VARIANT: </div>
             <button class="p-0.5 px-2 bg-gray-700 rounded-lg" onclick={() => setPrompted(p => !p)}>
@@ -290,7 +288,7 @@ export default function Home() {
         </div>
       </Show>
 
-      <div class={`${showNotes() ? "" : "invisible"} fixed inset-2 z-5 flex flex-col items-stretch bg-gray-750 rounded-xl`}>
+      <div class={`${showNotes() ? "" : "invisible"} fixed inset-2 z-50 flex flex-col items-stretch bg-gray-700 rounded-xl`}>
         <div class="p-4 flex flex-row justify-between text-gray-100">
           <div class="text-xl">
             Notizen

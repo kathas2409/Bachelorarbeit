@@ -8,34 +8,18 @@
       "assets/index-710dbd4e.css"
     ],
     "dynamicImports": [
-      "src/routes/[...404].tsx",
-      "src/routes/index.tsx"
+      "src/routes/[...404].tsx"
     ],
-    "file": "assets/index-1e7aaf40.js",
+    "file": "assets/index-6e783f20.js",
     "isEntry": true,
     "src": "index.html"
   },
   "src/routes/[...404].tsx": {
-    "file": "assets/_...404_-62284be3.js",
+    "file": "assets/_...404_-76174ad1.js",
     "imports": [
       "index.html"
     ],
     "isDynamicEntry": true,
     "src": "src/routes/[...404].tsx"
-  },
-  "src/routes/index.css": {
-    "file": "assets/index-4c23c6df.css",
-    "src": "src/routes/index.css"
-  },
-  "src/routes/index.tsx": {
-    "css": [
-      "assets/index-4c23c6df.css"
-    ],
-    "file": "assets/index-26dc10e2.js",
-    "imports": [
-      "index.html"
-    ],
-    "isDynamicEntry": true,
-    "src": "src/routes/index.tsx"
   }
 }

@@ -1,1 +1,0 @@
-.md p{margin-top:1rem;margin-bottom:1rem}.md p:where(.md>:first-child){margin-top:0}.md p:where(.md>:last-child){margin-bottom:0}.md ol{list-style:decimal}.md ul{list-style:circle}.md ol,.md ul{margin-left:1rem}.md>ol,.md>ul{margin-left:0}.md ol li>p,.md ul li>p{margin-left:0}.md ol>li>p{margin-left:.25rem}.md li{margin-top:.1rem;margin-bottom:.1rem}
