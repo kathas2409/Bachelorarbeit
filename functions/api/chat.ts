@@ -1,55 +1,40 @@
-import { JSDOM } from "jsdom";
-import { Readability } from "@mozilla/readability";
-import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
-async function extractTextFromUrl(url: string): Promise<string> {
+export const onRequestPost: PagesFunction<{ OPENAI_API_KEY: string }> = async (context) => {
   try {
-    const res = await fetch(url);
-    const html = await res.text();
-    const dom = new JSDOM(html, { url });
-    const reader = new Readability(dom.window.document);
-    const article = reader.parse();
-    return article?.textContent || "Kein Inhalt gefunden.";
-  } catch (err) {
-    console.error("Fehler beim Extrahieren:", err);
-    return "Fehler beim Abrufen der Seite.";
-  }
-}
-
-export const onRequestPost: PagesFunction = async (context) => {
-  const { message } = await context.request.json();
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const urls = message.match(urlRegex);
-
-  let webText = "";
-
-  if (urls) {
-    const contents = await Promise.all(urls.map(extractTextFromUrl));
-    webText = contents.join("\n\n");
-  }
-
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "system",
-        content: "Du analysierst Webseiteninhalte auf ihre Glaubwürdigkeit, Verständlichkeit und Seriosität."
+    const { messages, prompted } = await context.request.json();
+    
+    // OpenAI API direkt aufrufen ohne SDK
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${context.env.OPENAI_API_KEY}`
       },
-      {
-        role: "user",
-        content: `Frage: ${message}\n\nInhalte der verlinkten Webseiten:\n${webText}`
-      }
-    ]
-  });
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 1000
+      })
+    });
 
-  const reply = completion.choices[0]?.message?.content || "Keine Antwort erhalten.";
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
 
-  return new Response(JSON.stringify({ reply }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" }
-  });
+    const data = await response.json();
+    const reply = data.choices[0]?.message?.content || "Keine Antwort erhalten.";
+
+    return new Response(JSON.stringify({ reply }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error) {
+    console.error("Fehler in chat.ts:", error);
+    return new Response(JSON.stringify({ 
+      reply: "Es ist ein Fehler aufgetreten. Bitte versuche es später erneut." 
+    }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
 };

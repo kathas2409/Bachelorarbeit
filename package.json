@@ -1,9 +1,9 @@
 {
   "name": "verifizierung-studie",
   "scripts": {
-    "dev": "solid-start dev",
-    "build": "solid-start build",
-    "start": "solid-start start"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "type": "module",
   "devDependencies": {
@@ -15,6 +15,7 @@
     "vite": "^4.3.9"
   },
   "dependencies": {
-    "solid-js": "^1.8.11"
+    "solid-js": "^1.8.11",
+    "solid-markdown": "^2.0.14"
   }
 }

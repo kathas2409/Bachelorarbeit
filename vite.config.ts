@@ -5,6 +5,10 @@ export default defineConfig({
   plugins: [
     solid({ 
       ssr: false,
+      solid: {
+        generate: "dom",
+        hydratable: false
+      },
       adapter: "solid-start-cloudflare-pages"
     })
   ],
@@ -15,5 +19,8 @@ export default defineConfig({
         manualChunks: undefined
       }
     }
+  },
+  ssr: {
+    noExternal: true
   }
 });

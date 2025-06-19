@@ -1,59 +1,10 @@
 import { ChatMessage } from "~/routes";
 import { createSignal } from "solid-js";
-import OpenAI from 'openai';
-
-function getSessionId(): string {
-  let id = localStorage.getItem("sessionId");
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem("sessionId", id);
-  }
-  return id;
-}
-
-async function getIpHash(): Promise<string> {
-  const ip = await fetch("https://api.ipify.org?format=json")
-    .then((res) => res.json())
-    .then((data) => data.ip);
-
-  const encoder = new TextEncoder();
-  const data = encoder.encode(ip);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-async function saveMessageToServer(message: string) {
-  const sessionId = getSessionId();
-  const ipHash = await getIpHash();
-  const timestamp = new Date().toISOString();
-
-  console.log("Speichern ausgelöst für:", message); // Debug-Ausgabe
-
-  await fetch("/api/saveMessage", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      sessionId,
-      ipHash,
-      message,
-      timestamp,
-    }),
-  });
-}
 
 export class API {
-  openai: OpenAI;
   prompted: boolean;
 
   constructor(prompted: boolean) {
-    this.openai = new OpenAI({
-      baseURL: "https://verifizierung-studie.pages.dev/openai/v1/",
-      dangerouslyAllowBrowser: true,
-      apiKey: "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",
-    });
-
     this.prompted = prompted;
   }
 
@@ -64,13 +15,13 @@ export class API {
 
     const fetchResponse = async () => {
       try {
-        const apiMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
-
+        // Bereite die Nachrichten für die API vor
+        const apiMessages = [];
+        
         if (this.prompted) {
           apiMessages.push({
             role: "system",
-            content:
-              "You are a helpful assistant following these rules:\n" +
+            content: "You are a helpful assistant following these rules:\n" +
               "- Aim for a conversational tone.\n" +
               "- Start by asking open-ended questions to gather necessary information for the task.\n" +
               "- Avoid asking overly broad questions or presenting more than 2 different questions at once.\n" +
@@ -96,25 +47,26 @@ export class API {
           content: message,
         });
 
-        await saveMessageToServer(message);
-
-        const stream = await this.openai.chat.completions.create({
-          messages: apiMessages,
-          model: "gpt-4o-2024-11-20",
-          stream: true,
+        // Sende an unsere API Funktion
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            messages: apiMessages,
+            prompted: this.prompted
+          })
         });
 
-        let fullResponse = "";
-
-        for await (const chunk of stream) {
-          const newText = chunk.choices[0]?.delta?.content || "";
-          fullResponse += newText;
-          setContent((content) => content + newText);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        await saveMessageToServer(fullResponse);
-
+        const data = await response.json();
+        setContent(data.reply || "Keine Antwort erhalten");
         setDone(true);
+
       } catch (e) {
         setDone(true);
         setError(String(e));
@@ -144,37 +96,4 @@ export class API {
       retry,
     };
   }
-}
-
-function simulateApiResponse(
-  answer: string,
-  failureProbability: number,
-  answerHandler: (token: string | true, error: null | string) => void
-) {
-  const naiveTokens = splitTextIntoParts(answer, 8);
-
-  let tokenIndex = 0;
-  const interval = setInterval(() => {
-    if (Math.random() < failureProbability) {
-      answerHandler("", "Something went wrong :(");
-      clearInterval(interval);
-      return;
-    }
-
-    answerHandler(naiveTokens[tokenIndex], null);
-    tokenIndex++;
-
-    if (tokenIndex >= naiveTokens.length) {
-      answerHandler(true, null);
-      clearInterval(interval);
-    }
-  }, 100);
-}
-
-function splitTextIntoParts(text: string, chunkSize: number): string[] {
-  const parts: string[] = [];
-  for (let i = 0; i < text.length; i += chunkSize) {
-    parts.push(text.slice(i, i + chunkSize));
-  }
-  return parts;
 }
