@@ -154,18 +154,80 @@ export default function Home() {
   }).catch((err) => console.warn("Fehler beim Speichern:", err))
 
   // 3. GPT-Antwort von /api/chat holen (mit Webseiteninhalt)
-  try {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ message: messageText })
+  t// 3. GPT-Antwort von /api/chat holen
+try {
+  // Sammle alle bisherigen Nachrichten für den Kontext
+  const allMessages = [];
+  
+  // Füge System-Prompt hinzu wenn "prompted" aktiviert ist
+  if (prompted()) {
+    allMessages.push({
+      role: "system",
+      content: "Du bist ein hilfreicher Assistent. Antworte auf Deutsch."
+    });
+  }
+  
+  // Füge alle bisherigen Nachrichten hinzu
+  for (const msg of messages()) {
+    if (msg.role === "user") {
+      allMessages.push({
+        role: "user",
+        content: msg.content
+      });
+    } else {
+      allMessages.push({
+        role: "assistant", 
+        content: msg.content()
+      });
+    }
+  }
+  
+  // Füge die neue Nachricht hinzu
+  allMessages.push({
+    role: "user",
+    content: messageText
+  });
+
+  console.log("Sende an API:", { messages: allMessages });
+
+  const res = await fetch("/api/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ 
+      messages: allMessages,
+      prompted: prompted() 
     })
+  });
 
-    const data = await res.json()
-    const replyText = data.reply || "Ich konnte leider keine Antwort generieren."
+  if (!res.ok) {
+    throw new Error(`HTTP error! status: ${res.status}`);
+  }
 
+  const data = await res.json();
+  const replyText = data.reply || "Ich konnte leider keine Antwort generieren.";
+
+  // 4. GPT-Antwort anzeigen
+  setMessages(m => [...m, {
+    time: Date.now(),
+    role: "assistant",
+    content: () => replyText,
+    done: () => true,
+    error: () => null,
+    retry: () => { }
+  }]);
+} catch (err) {
+  console.error("Fehler bei GPT-Antwort:", err);
+  setMessages(m => [...m, {
+    time: Date.now(),
+    role: "assistant",
+    content: () => "",
+    done: () => true,
+    error: () => "Fehler beim Abrufen der Antwort",
+    retry: () => onsubmit()
+  }]);
+}
     // 4. GPT-Antwort anzeigen
     setMessages(m => [...m, {
       time: Date.now(),
