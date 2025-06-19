@@ -5,9 +5,7 @@
   ],
   "\u0000vite/modulepreload-polyfill": [],
   "\u0000vite/preload-helper": [],
-  "../../../../../../__uno.css": [],
   ".solid/index.html": [],
-  "assets/index-!~{001}~.js-unocss-hash.css": [],
   "node_modules/@solid-devtools/shared/dist/chunk/AJRIPJTI.js": [],
   "node_modules/@solidjs/meta/dist/index.jsx": [],
   "node_modules/@solidjs/router/dist/components.jsx": [],
@@ -31,7 +29,6 @@
     "/assets/index-d654e335.js",
     "/assets/index-4c23c6df.css"
   ],
-  "node_modules/@unocss/reset/tailwind.css": [],
   "node_modules/bail/index.js": [
     "/assets/index-d654e335.js",
     "/assets/index-4c23c6df.css"

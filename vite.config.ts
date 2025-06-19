@@ -7,5 +7,13 @@ export default defineConfig({
       ssr: false,
       adapter: "solid-start-cloudflare-pages"
     })
-  ]
+  ],
+  build: {
+    target: 'esnext',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
+  }
 });

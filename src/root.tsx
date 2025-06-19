@@ -15,18 +15,17 @@ import {
 } from "solid-start";
 
 import "./css/font.css"
-import "virtual:uno.css"
-import '@unocss/reset/tailwind.css'
 
 export default function Root() {
   return (
-    <Html lang="en">
+    <Html lang="de">
       <Head>
-        <Title>FoIR</Title>
+        <Title>Verifizierung Studie</Title>
         <Meta charset="utf-8" />
         <Meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script src="https://cdn.tailwindcss.com"></script>
       </Head>
-      <Body class="font-sans font-normal bg-gray-800 text-gray-300">
+      <Body>
         <Suspense>
           <ErrorBoundary>
             <Routes>
