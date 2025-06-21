@@ -4,3 +4,8 @@ pages_build_output_dir = "dist"
 
 # Node.js Kompatibilität für Pages
 compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "verifizierung_studie_db"
+database_id = "4e89b759-2001-47d8-a187-3952d2c566a3"
