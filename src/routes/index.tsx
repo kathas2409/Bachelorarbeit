@@ -60,10 +60,12 @@ export default function Home() {
     >
       <div class="my-4 w-full flex flex-col gap-4 items-center">
         <For each={messages()}>{(message) =>
-          <div class={`max-w-3xl px-8 w-full break-words py-3 rounded-xl text-white`}>            <div class="text-lg font-bold mb-1">{message.role === "user" ? "Nutzer" : "Assistent"}</div>
+          <div class={`max-w-3xl px-8 w-full break-words py-3 rounded-xl text-white`}>
+            <div class="text-lg font-bold mb-1">{message.role === "user" ? "Nutzer" : "Assistent"}</div>
             {
               message.role === "user" ?
-              <p class="whitespace-pre-wrap text-white">{message.content}</p>                :
+                <p class="whitespace-pre-wrap text-white">{message.content}</p>
+                :
                 <>
                   <SolidMarkdown class={"md" + (message.error() ? " opacity-50" : "")}>
                     {message.content() + (message.done() ? (message.error() !== null ? " ❌" : "") : " ⬤")}
@@ -73,8 +75,8 @@ export default function Home() {
                       <div class="text-red-500">
                         Error: {message.error()}
                       </div>
-                      <button class="p-1 my-1 w-8 h-8 flex justify-center items-center border-1 align-start animate-pulse hover:animate-none
-                          bg-gray-900 text-gray-400 border-gray-900 disabled:text-gray-600 not-disabled:(border-green-400 hover:(bg-gray-900/60 text-gray-200) active:(border-blue-400 bg-gray-900/20))
+                      <button class="p-1 my-1 w-8 h-8 flex justify-center items-center border border-green-400 animate-pulse hover:animate-none
+                          bg-gray-900 text-gray-400 disabled:text-gray-600 hover:bg-gray-900/60 hover:text-gray-200 active:border-blue-400 active:bg-gray-900/20
                             rounded-lg"
                           onclick={() => message.retry()}
                       >
@@ -232,10 +234,10 @@ export default function Home() {
       <div class="h-4" />
 
       <div class="fixed flex flex-col gap-4 left-2 top-2 z-10 group">
-        <div class="absolute left-8 inset-y-0 flex flex-row items-center text-sm text-gray-500 opacity-0 group-hover:(opacity-100 left-12) transition-all duration-200 pointer-events-none">
+        <div class="absolute left-8 inset-y-0 flex flex-row items-center text-sm text-gray-500 opacity-0 group-hover:opacity-100 group-hover:left-12 transition-all duration-200 pointer-events-none">
           [ESC]
         </div>
-        <button class="relative p-1 bg-gray-700 hover:bg-gray-700 rounded-xl outline-none" onclick={() => setShowNotes(true)}>
+        <button class="relative p-1 bg-gray-700 hover:bg-gray-600 rounded-xl outline-none" onclick={() => setShowNotes(true)}>
           <NotesIcon />
         </button>
         <Show when={debug()}>
@@ -247,12 +249,12 @@ export default function Home() {
         <div class="fixed inset-2 z-10 p-2 flex flex-col items-center gap-4 bg-gray-700 rounded-xl">
           <div class="flex flex-row gap-2">
             <div>MODEL VARIANT: </div>
-            <button class="p-0.5 px-2 bg-gray-700 rounded-lg" onclick={() => setPrompted(p => !p)}>
+            <button class="p-0.5 px-2 bg-gray-600 rounded-lg" onclick={() => setPrompted(p => !p)}>
               {prompted() ? "Prompted" : "Base"}
             </button>
           </div>
 
-          <button class="p-0.5 px-2 bg-gray-700 rounded-lg" onclick={() => {
+          <button class="p-0.5 px-2 bg-gray-600 rounded-lg" onclick={() => {
             const date = messages().length === 0 ? new Date() : new Date(messages()[0].time)
             let output = "# ChatGPT Log " + (prompted() ? "Prompted" : "Base") + " " + date.toLocaleString("de-DE") + "\n\n"
             for (let message of messages()) {
@@ -264,7 +266,7 @@ export default function Home() {
             downloadFile( [output], "text/markdown", "Chatbot-Log-" + (prompted() ? "prompted" : "base") + "-" + date.getTime() + ".md");
           }}>Download Markdown</button>
 
-          <button class="p-0.5 px-2 bg-gray-700 rounded-lg" onclick={() => {
+          <button class="p-0.5 px-2 bg-gray-600 rounded-lg" onclick={() => {
             const date = messages().length === 0 ? new Date() : new Date(messages()[0].time)
             let output: { time: number, role: "user" | "assistant" | "notes", content: string }[] = []
             for (let message of messages()) {
@@ -303,3 +305,50 @@ export default function Home() {
         </div>
         <div class="flex-1">
             <textarea
+              id="notes-textarea"
+              class="w-full h-full resize-none p-4 outline-none border-0 bg-gray-800/30"
+            />
+        </div>
+      </div>
+
+      <div class="relative flex-1 overflow-hidden">
+        <ScrollOverflowFadeout top />
+        { chatMessageScroller }
+        <ScrollOverflowFadeout />
+      </div>
+
+      <div class="overflow-x-hidden w-full p-4 flex flex-row justify-center items-end gap-2">
+        <div class="max-w-2xl w-full flex flex-col gap-4 items-center">
+          <GrowingTextarea
+            id="chat-input"
+            accessor={message}
+            setter={setMessage}
+            onsubmit={onsubmit}
+            disabled={latestMessagePending()}
+            color="#ff00ff"
+            class="bg-gray-900 rounded-lg outline-none border-0 ring focus-visible:ring-blue-400 ring-gray-900 disabled:text-gray-700 disabled:placeholder:text-gray-700"
+            placeholder="Schreibe dem Assistenten…"
+          />
+        </div>
+        <button
+          class="my-1 w-12 h-12 flex justify-center items-center border border-gray-900 
+          bg-gray-900 text-gray-400 disabled:text-gray-600 hover:bg-gray-900/60 hover:text-gray-200 active:border-blue-400 active:bg-gray-900/20
+          rounded-lg"
+          disabled={message().length === 0 || latestMessagePending()}
+          onclick={onsubmit}
+        >
+          <SendIcon />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ScrollOverflowFadeout(props: { top?: boolean }) {
+  return (
+    <div class={`absolute inset-x-0 ${props.top ? "top-0" : "bottom-0"} h-8 flex flex-row justify-center`}>
+      {/* mr-10px macht sicher dass die Scrollbar nicht vom Fadeout betroffen ist */}
+      <div class={`max-w-3xl w-full mr-2.5 ${props.top ? "bg-gradient-to-b" : "bg-gradient-to-t"} from-gray-800 to-transparent`} />
+    </div>
+  )
+}
