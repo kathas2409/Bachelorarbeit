@@ -207,7 +207,7 @@ export default function Home() {
       const data = await res.json();
       const replyText = data.reply || "Ich konnte leider keine Antwort generieren.";
 
-      // 4. GPT-Antwort anzeigen
+// 4. GPT-Antwort anzeigen
       setMessages(m => [...m, {
         time: Date.now(),
         role: "assistant",
@@ -216,28 +216,19 @@ export default function Home() {
         error: () => null,
         retry: () => { }
       }]);
-// 4. GPT-Antwort anzeigen
-setMessages(m => [...m, {
-  time: Date.now(),
-  role: "assistant",
-  content: () => replyText,
-  done: () => true,
-  error: () => null,
-  retry: () => { }
-}]);
 
-// Speichere auch die Assistenten-Antwort
-fetch("/api/saveMessage", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({ 
-    message: replyText,
-    role: "assistant",
-    prompted: prompted()
-  })
-}).catch((err) => console.warn("Fehler beim Speichern der Antwort:", err));
+      // Speichere auch die Assistenten-Antwort
+      fetch("/api/saveMessage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ 
+          message: replyText,
+          role: "assistant",
+          prompted: prompted()
+        })
+      }).catch((err) => console.warn("Fehler beim Speichern der Antwort:", err));
 
     } catch (err) {
       console.error("Fehler bei GPT-Antwort:", err);
