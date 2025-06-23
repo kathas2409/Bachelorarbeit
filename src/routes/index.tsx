@@ -8,6 +8,11 @@ import { ReloadIcon } from "~/components/icons/ReloadIcon";
 import { downloadFile } from "~/ts/util";
 import { NotesIcon } from "~/components/icons/NotesIcon";
 
+// Debug Chrome Runtime Messages (optional)
+if (typeof chrome !== 'undefined' && chrome.runtime) {
+  console.log("Chrome Runtime verfügbar");
+}
+
 export type UserMessage = {
   time: number,
   role: "user"
@@ -166,7 +171,7 @@ export default function Home() {
         });
       }
       
-      // Füge alle bisherigen Nachrichten hinzu
+      // Füge alle bisherigen Nachrichten hinzu (INKLUSIVE der neuen!)
       for (const msg of messages()) {
         if (msg.role === "user") {
           allMessages.push({
@@ -181,11 +186,7 @@ export default function Home() {
         }
       }
       
-      // Füge die neue Nachricht hinzu
-      allMessages.push({
-        role: "user",
-        content: messageText
-      });
+      // ENTFERNT: Die doppelte Hinzufügung der neuen Nachricht war hier
 
       console.log("Sende an API:", { messages: allMessages });
 
@@ -207,7 +208,7 @@ export default function Home() {
       const data = await res.json();
       const replyText = data.reply || "Ich konnte leider keine Antwort generieren.";
 
-// 4. GPT-Antwort anzeigen
+      // 4. GPT-Antwort anzeigen
       setMessages(m => [...m, {
         time: Date.now(),
         role: "assistant",
