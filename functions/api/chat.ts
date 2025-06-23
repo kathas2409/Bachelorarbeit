@@ -3,6 +3,7 @@ export const onRequestPost: PagesFunction<{
   NEWS_API_KEY?: string;
   BRAVE_API_KEY?: string;
   THE_GUARDIAN_KEY?: string;
+  GOOGLE_API_KEY?: string;
 }> = async ({ request, env }) => {
   console.log("=== Chat Function Start ===");
   
@@ -56,19 +57,32 @@ export const onRequestPost: PagesFunction<{
         role: "system",
         content: `Du bist ein Experte für Nachrichtenverifikation und Faktenchecking. 
         
+WICHTIG: Wenn professionelle Faktenchecks verfügbar sind, gewichte diese besonders stark!
+
 Deine Aufgaben:
-1. Suche IMMER nach aktuellen Nachrichten wenn nach Verifikation, aktuellen Ereignissen oder Personen gefragt wird
-2. Analysiere und vergleiche mehrere Quellen
-3. Identifiziere Übereinstimmungen und Widersprüche zwischen Quellen
-4. Bewerte die Glaubwürdigkeit basierend auf Quellenvielfalt und Reputation
-5. Gib das Publikationsdatum jeder relevanten Information an
-6. Markiere unsichere oder widersprüchliche Informationen
+1. Prüfe ZUERST ob bereits Faktenchecks zu der Behauptung existieren
+2. Vergleiche News-Berichte mit vorhandenen Faktenchecks
+3. Wenn Faktenchecker eine Aussage als falsch bewerten, markiere dies deutlich
+4. Analysiere und vergleiche mehrere Quellen
+5. Identifiziere Übereinstimmungen und Widersprüche zwischen Quellen
+6. Bewerte die Glaubwürdigkeit basierend auf Quellenvielfalt und Reputation
+7. Gib das Publikationsdatum jeder relevanten Information an
+8. Markiere unsichere oder widersprüchliche Informationen
+
+Verifikationsstufen:
+- ✅ BESTÄTIGT: Faktenchecker und mehrere Quellen stimmen überein
+- ⚠️ UMSTRITTEN: Widersprüchliche Faktenchecks oder Quellen  
+- ❌ WIDERLEGT: Faktenchecker haben dies als falsch eingestuft
+- ❓ UNGEPRÜFT: Keine Faktenchecks verfügbar, nur News-Quellen
 
 Strukturiere deine Antworten mit:
 - Zusammenfassung der Faktenlage
+- Professionelle Faktenchecks (falls vorhanden)
 - Quellenanalyse (welche Quellen berichten was)
 - Übereinstimmungen/Widersprüche
-- Verifikationsstatus: ✅ Bestätigt / ⚠️ Teilweise bestätigt / ❌ Widerlegt / ❓ Unklar`
+- Verifikationsstatus
+
+Gib IMMER an wenn professionelle Faktenchecks vorliegen!`
       });
     } else {
       systemMessages.push({
@@ -195,6 +209,28 @@ Strukturiere deine Antworten mit:
           );
         }
 
+        // 5. Google Fact Check API
+        if (env.GOOGLE_API_KEY) {
+          console.log("Searching existing fact checks...");
+          newsPromises.push(
+            fetch(
+              `https://factchecktools.googleapis.com/v1alpha1/claims:search?` +
+              `query=${encodeURIComponent(functionArgs.query)}` +
+              `&key=${env.GOOGLE_API_KEY}`
+            ).then(r => r.json())
+            .then(data => {
+              if (!data.claims || data.claims.length === 0) {
+                return null;
+              }
+              return data;
+            })
+            .catch(e => {
+              console.error("Fact Check API error:", e);
+              return null;
+            })
+          );
+        }
+
         // Warte auf alle Ergebnisse
         const results = await Promise.allSettled(newsPromises);
 
@@ -282,18 +318,59 @@ Strukturiere deine Antworten mit:
           });
         }
 
+        // Verarbeite Google Fact Check Ergebnisse
+        if (results[4]?.status === 'fulfilled' && results[4].value?.claims) {
+          combinedNewsData += "\n=== ✅ PROFESSIONELLE FAKTENCHECKS ===\n";
+          combinedNewsData += `(${results[4].value.claims.length} Faktenchecks gefunden)\n\n`;
+          
+          results[4].value.claims.slice(0, 5).forEach((claim, index) => {
+            combinedNewsData += `🔍 Faktencheck ${index + 1}:\n`;
+            combinedNewsData += `Behauptung: "${claim.text}"\n`;
+            if (claim.claimant) {
+              combinedNewsData += `Behauptet von: ${claim.claimant}\n`;
+            }
+            
+            if (claim.claimReview && claim.claimReview.length > 0) {
+              claim.claimReview.forEach(review => {
+                combinedNewsData += `\nGeprüft von: ${review.publisher.name}\n`;
+                combinedNewsData += `Bewertung: ${review.textualRating} `;
+                
+                // Konvertiere Rating in Emoji
+                const rating = review.textualRating.toLowerCase();
+                if (rating.includes('false') || rating.includes('falsch') || rating.includes('fake')) {
+                  combinedNewsData += '❌';
+                } else if (rating.includes('true') || rating.includes('wahr') || rating.includes('correct')) {
+                  combinedNewsData += '✅';
+                } else if (rating.includes('mixture') || rating.includes('teilweise') || rating.includes('partly')) {
+                  combinedNewsData += '⚠️';
+                } else {
+                  combinedNewsData += '❓';
+                }
+                
+                combinedNewsData += `\nTitel: ${review.title}\n`;
+                combinedNewsData += `URL: ${review.url}\n`;
+                combinedNewsData += `Datum: ${new Date(review.reviewDate).toLocaleDateString('de-DE')}\n`;
+              });
+            }
+            combinedNewsData += `---\n\n`;
+          });
+        }
+
         // Zusammenfassung der Suche
         const totalArticles = 
           (results[0]?.value?.results?.length || 0) +
           (results[1]?.value?.articles?.length || 0) +
           (results[2]?.value?.response?.results?.length || 0) +
           (results[3]?.value?.web?.results?.length || 0);
+        
+        const factChecks = results[4]?.value?.claims?.length || 0;
 
         combinedNewsData += `\n=== 📊 ZUSAMMENFASSUNG ===\n`;
         combinedNewsData += `🔍 Suchbegriff: "${functionArgs.query}"\n`;
         combinedNewsData += `📅 Zeitpunkt: ${new Date().toLocaleString('de-DE')}\n`;
-        combinedNewsData += `📰 Quellen abgefragt: ${results.filter(r => r.status === 'fulfilled' && r.value).length} von 4\n`;
+        combinedNewsData += `📰 Quellen abgefragt: ${results.filter(r => r.status === 'fulfilled' && r.value).length} von 5\n`;
         combinedNewsData += `📄 Artikel/Quellen gefunden: ${totalArticles}\n`;
+        combinedNewsData += `✅ Faktenchecks gefunden: ${factChecks}\n`;
         combinedNewsData += `🌐 Sprache: ${functionArgs.language || 'de'}\n\n`;
 
         if (totalArticles === 0) {
