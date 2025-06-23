@@ -135,9 +135,18 @@ export default function Home() {
     });
   }
 
+  let isSubmitting = false;
+  
   const onsubmit = async () => {
     const messageText = message()
     if (messageText.length === 0) return
+    
+    // Verhindere doppelte Submits
+    if (isSubmitting) {
+      console.warn("Submit already in progress, ignoring");
+      return;
+    }
+    isSubmitting = true;
 
     const timestamp = Date.now()
 
@@ -230,6 +239,8 @@ export default function Home() {
           prompted: prompted()
         })
       }).catch((err) => console.warn("Fehler beim Speichern der Antwort:", err));
+      
+      isSubmitting = false;
 
     } catch (err) {
       console.error("Fehler bei GPT-Antwort:", err);
@@ -241,6 +252,8 @@ export default function Home() {
         error: () => "Fehler beim Abrufen der Antwort",
         retry: () => onsubmit()
       }]);
+    } finally {
+      isSubmitting = false;
     }
   }
 
